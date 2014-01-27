@@ -2,6 +2,7 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <string.h>
 #include "ev3sensor.h"
 #include "uart.h"
 #include "iic.h"
@@ -14,6 +15,7 @@ UART* g_uartSensors = 0;
 IIC* g_iicSensors = 0;
 ANALOG* g_analogSensors = 0;
 int g_sensorMode[INPUTS];
+DATA8 g_iicReadBuffer[INPUTS][IIC_DATA_LENGTH];
 
 int initSensors()
 {
@@ -150,4 +152,32 @@ int setSensorMode(int sensorPort, int mode)
 	ioctl(g_uartFile, UART_SET_CONN, &devCon);
 	ioctl(g_iicFile, IIC_SET_CONN, &devCon);
 	return 0;
+}
+
+int i2cWrite(const unsigned char sensorPort, unsigned char bufferLength, unsigned char* buffer)
+{
+	if (sensorPort < 0 || sensorPort >= INPUTS)
+		return FAIL;
+
+	IICDAT iicdat;
+    iicdat.Result = BUSY;
+	iicdat.Port = sensorPort;
+	iicdat.Repeat = 0;
+	iicdat.Time = 0;
+	iicdat.WrLng = (bufferLength > IIC_DATA_LENGTH) ? IIC_DATA_LENGTH : bufferLength;
+	iicdat.RdLng = IIC_DATA_LENGTH;
+
+	memcpy(iicdat.WrData, buffer, iicdat.WrLng);
+	ioctl(g_iicFile, IIC_SETUP, &iicdat);
+	memcpy(g_iicReadBuffer[sensorPort], iicdat.RdData, iicdat.RdLng);
+
+	return iicdat.Result;
+}
+
+int i2cRead(const unsigned char sensorPort, unsigned char** buffer)
+{
+	if (sensorPort < 0 || sensorPort >= INPUTS)
+		return FAIL;
+	*buffer = g_iicReadBuffer[sensorPort];
+	return OK;
 }

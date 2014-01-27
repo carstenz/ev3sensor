@@ -11,7 +11,12 @@ int main()
     setSensorMode(INPUT_1, 0);
     LcdInit();
     
-    char buffer[50];
+    unsigned char writeBuffer[16];
+    unsigned char* readBuffer;
+    i2cWrite(INPUT_1, 16, writeBuffer);
+    i2cRead(INPUT_1, &readBuffer);
+
+	char buffer[50];
     int i;
     for (i = 0; i < 40; i++)
     {

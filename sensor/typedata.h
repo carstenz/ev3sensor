@@ -71,6 +71,15 @@ typedef   enum
 }
 CONN;
 
+typedef   enum
+{
+  OK            = 0,                    //!< No errors to report
+  BUSY          = 1,                    //!< Busy - try again
+  FAIL          = 2,                    //!< Something failed
+  STOP          = 4                     //!< Stopped
+}
+RESULT;
+
 typedef   struct
 {
   DATA8     Connection[INPUTS];
@@ -79,13 +88,26 @@ typedef   struct
 }
 DEVCON;
 
+typedef   struct
+{
+  RESULT  Result;
+  DATA8   Port;
+  DATA8   Repeat;
+  DATA16  Time;
+  DATA8   WrLng;
+  DATA8   WrData[MAX_DEVICE_DATALENGTH];
+  DATA8   RdLng;
+  DATA8   RdData[MAX_DEVICE_DATALENGTH];
+}
+IICDAT;
+
 #define   UART_SET_CONN           _IOWR('u',0,DEVCON)
 //#define   UART_READ_MODE_INFO     _IOWR('u',1,UARTCTL)
 //#define   UART_NACK_MODE_INFO     _IOWR('u',2,UARTCTL)
 //#define   UART_CLEAR_CHANGED      _IOWR('u',3,UARTCTL)
 #define   IIC_SET_CONN            _IOWR('i',2,DEVCON)
 //#define   IIC_READ_TYPE_INFO      _IOWR('i',3,IICCTL)
-//#define   IIC_SETUP               _IOWR('i',5,IICDAT)
+#define   IIC_SETUP               _IOWR('i',5,IICDAT)
 //#define   IIC_SET                 _IOWR('i',6,IICSTR)
 
 #endif //TYPEDATA_H_
